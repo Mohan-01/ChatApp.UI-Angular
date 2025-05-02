@@ -1,0 +1,337 @@
+<div class="container mt-5">
+  <div class="row">
+    <!-- Sidebar -->
+    <div class="col-md-3">
+      <div class="card shadow-sm">
+        <div class="card-body text-center">
+          <img
+            [src]="defaultProfilePicture"
+            alt="Profile Picture"
+            class="profile-pic rounded-circle img-fluid border"
+          />
+          <h5 class="mt-3">{{ authServiceFields.username }}</h5>
+        </div>
+        <ul class="list-group list-group-flush">
+          <li
+            class="list-group-item list-group-item-action"
+            [class.active]="isEditing"
+            (click)="enableEdit()"
+          >
+            Edit Profile
+          </li>
+          <li
+            class="list-group-item list-group-item-action"
+            [class.active]="isPasswordChange"
+            (click)="enablePasswordChange()"
+          >
+            Change Password
+          </li>
+          <!-- <li
+            class="list-group-item list-group-item-action"
+            [class.active]="isPasswordReset"
+            (click)="enablePasswordReset()"
+          >
+            Reset Password
+          </li> -->
+          <li
+            class="list-group-item list-group-item-action text-danger"
+            (click)="deleteUser()"
+          >
+            Delete Account
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="col-md-9">
+      <!-- Alerts -->
+      <!-- <div *ngIf="errorMessage" class="alert alert-danger">
+        {{ errorMessage }}
+      </div>
+      <div *ngIf="successMessage" class="alert alert-success">
+        {{ successMessage }}
+      </div> -->
+
+      <!-- Profile Card -->
+      <div *ngIf="!isEditing && !isPasswordReset" class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+          <h5>User Profile</h5>
+        </div>
+        <div class="card-body">
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <!-- <h6>Username</h6>
+              <p class="text-muted">{{ user?.username }}</p> -->
+              <label for="username" class="form-label h6">Username</label>
+              <!-- class="fa-regular fa-pen-to-square" -->
+              <button
+                type="button"
+                class="btn btn-warning"
+                (click)="disableUsername(false)"
+                *ngIf="this.authFieldDisabled.username"
+              >
+                Edit
+              </button>
+              <ng-container *ngIf="!this.authFieldDisabled.username">
+                <button
+                  type="button"
+                  class="btn btn-warning"
+                  (click)="disableUsername(true)"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-warning"
+                  (click)="saveUsername()"
+                >
+                  Save
+                </button>
+              </ng-container>
+
+              <input
+                type="text"
+                id="username"
+                class="form-control"
+                [(ngModel)]="changeUsernameRequest.newUsername"
+                name="username"
+                [disabled]="authFieldDisabled.username"
+              />
+            </div>
+            <div class="col-md-6">
+              <!-- <h6>Email</h6>
+              <p class="text-muted">{{ user?.email }}</p> -->
+              <label for="email" class="form-label">Email</label>
+              <button
+                type="button"
+                class="btn btn-warning"
+                (click)="disableEmail(false)"
+                *ngIf="this.authFieldDisabled.email"
+              >
+                Edit
+              </button>
+              <ng-container *ngIf="!this.authFieldDisabled.email">
+                <button
+                  type="button"
+                  class="btn btn-warning"
+                  (click)="disableEmail(true)"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-warning"
+                  (click)="saveEmail()"
+                >
+                  Save
+                </button>
+              </ng-container>
+              <input
+                type="email"
+                id="email"
+                class="form-control"
+                [(ngModel)]="updateEmailRequest.newEmail"
+                name="email"
+                [disabled]="authFieldDisabled.email"
+              />
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <h6>Roles</h6>
+              <p class="text-muted">{{ authServiceFields.roles.join(", ") }}</p>
+            </div>
+            <div class="col-md-6">
+              <h6>First Name</h6>
+              <p class="text-muted">{{ user?.firstName }}</p>
+            </div>
+            <div class="col-md-6">
+              <h6>Last Name</h6>
+              <p class="text-muted">{{ user?.lastName }}</p>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <h6>Phone</h6>
+              <p class="text-muted">{{ user?.phone || "N/A" }}</p>
+            </div>
+            <div class="col-md-6">
+              <h6>Status</h6>
+              <p class="text-muted">{{ user?.status }}</p>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6">
+              <h6>Last Seen</h6>
+              <p class="text-muted">{{ user?.lastSeen | date : "short" }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Edit Profile -->
+      <div *ngIf="isEditing && user !== null" class="card shadow-sm mt-4">
+        <div class="card-header bg-warning text-white">
+          <h5>Edit Profile</h5>
+        </div>
+        <div class="card-body">
+          <form>
+            <div class="mb-3">
+              <label for="firstName" class="form-label">First Name</label>
+              <input
+                type="text"
+                id="firstName"
+                class="form-control"
+                [(ngModel)]="user.firstName"
+                name="firstName"
+              />
+            </div>
+            <div class="mb-3">
+              <label for="lastName" class="form-label">Last Name</label>
+              <input
+                type="text"
+                id="lastName"
+                class="form-control"
+                [(ngModel)]="user.lastName"
+                name="lastName"
+              />
+            </div>
+            <div class="mb-3">
+              <label for="email" class="form-label">Email</label>
+              <input
+                type="email"
+                id="email"
+                class="form-control"
+                [(ngModel)]="user.email"
+                name="email"
+              />
+            </div>
+            <div class="mb-3">
+              <label for="phone" class="form-label">Phone</label>
+              <input
+                type="text"
+                id="phone"
+                class="form-control"
+                [(ngModel)]="user.phone"
+                name="phone"
+              />
+            </div>
+            <!-- <button class="btn btn-primary w-100" (click)="saveChanges()">
+              Save Changes
+            </button>
+            <button class="btn btn-secondary w-100 mt-2" (click)="cancelEdit()">
+              Cancel
+            </button> -->
+          </form>
+        </div>
+      </div>
+
+      <!-- Password Change -->
+      <div *ngIf="isPasswordChange" class="card shadow-sm mt-4">
+        <div class="card-header bg-danger text-white">
+          <h5>Change Password</h5>
+        </div>
+        <div class="card-body">
+          <form>
+            <div class="mb-3">
+              <label for="newPassword" class="form-label">New Password</label>
+              <input
+                type="password"
+                id="newPassword"
+                class="form-control"
+                [(ngModel)]="changePaswordRequest.newPassword"
+                name="newPassword"
+              />
+            </div>
+            <div class="mb-3">
+              <label for="confirmPassword" class="form-label"
+                >Confirm Password</label
+              >
+              <input
+                type="password"
+                id="confirmPassword"
+                class="form-control"
+                [(ngModel)]="confirmPassword"
+                name="confirmPassword"
+              />
+            </div>
+            <button
+              class="btn btn-primary w-100"
+              (click)="changePassword()"
+              type="button"
+            >
+              Change Password
+            </button>
+            <!-- <button
+              class="btn btn-secondary w-100 mt-2"
+              (click)="cancelEdit()"
+              type="button"
+            >
+              Cancel
+            </button> -->
+          </form>
+        </div>
+      </div>
+
+      <!-- Password Reset -->
+      <div *ngIf="isPasswordReset" class="card shadow-sm mt-4">
+        <div class="card-header bg-danger text-white">
+          <h5>Reset Password</h5>
+        </div>
+        <div class="card-body">
+          <form>
+            <!-- <div class="mb-3">
+              <label for="currentPassword" class="form-label"
+                >Current Password</label
+              >
+              <input
+                type="password"
+                id="currentPassword"
+                class="form-control"
+                [(ngModel)]="currentPassword"
+                name="currentPassword"
+              />
+            </div>
+            <div class="mb-3">
+              <label for="newPassword" class="form-label">New Password</label>
+              <input
+                type="password"
+                id="newPassword"
+                class="form-control"
+                [(ngModel)]="newPassword"
+                name="newPassword"
+              />
+            </div> -->
+            <div class="mb-3">
+              <label for="confirmPassword" class="form-label"
+                >Confirm Password</label
+              >
+              <input
+                type="password"
+                id="confirmPassword"
+                class="form-control"
+                [(ngModel)]="confirmPassword"
+                name="confirmPassword"
+              />
+            </div>
+            <!-- <button
+              class="btn btn-primary w-100"
+              (click)="resetPassword()"
+              type="button"
+            >
+              Reset Password
+            </button> -->
+            <!-- <button
+              class="btn btn-secondary w-100 mt-2"
+              (click)="cancelEdit()"
+              type="button"
+            >
+              Cancel
+            </button> -->
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

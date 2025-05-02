@@ -1,0 +1,29 @@
+.container {
+  max-width: 1200px;
+}
+
+.card {
+  border-radius: 12px;
+}
+
+.card-header {
+  border-bottom: none;
+}
+
+.card-body {
+  padding: 2rem;
+}
+
+img {
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.1);
+}
+
+.text-muted {
+  font-size: 1.1rem;
+}
+
+.profile-pic {
+  width: 150px;
+  height: 150px;
+  object-fit: cover;
+}

@@ -1,0 +1,70 @@
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card shadow">
+        <div class="card-body">
+          <h2 class="card-title text-center mb-4">Sign Up</h2>
+
+          <form (ngSubmit)="signup()">
+            <div class="mb-3">
+              <label for="username" class="form-label">Username</label>
+              <input
+                type="text"
+                id="username"
+                class="form-control"
+                [(ngModel)]="registerRequest.username"
+                name="username"
+                required
+              />
+            </div>
+
+            <div class="mb-3">
+              <label for="email" class="form-label">Email</label>
+              <input
+                type="email"
+                id="email"
+                class="form-control"
+                [(ngModel)]="registerRequest.email"
+                name="email"
+                required
+              />
+            </div>
+
+            <div class="mb-3">
+              <label for="password" class="form-label">Password</label>
+              <input
+                type="password"
+                id="password"
+                class="form-control"
+                [(ngModel)]="registerRequest.password"
+                name="password"
+                required
+              />
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">Sign Up</button>
+            <div
+              id="g_id_onload"
+              data-client_id="48957325825-hcfi4681fqum445pgs9oo7aj8iar5pvd.apps.googleusercontent.com"
+              data-context="signup"
+              data-ux_mode="popup"
+              data-login_uri="http://localhost:4200/register"
+              data-auto_select="true"
+              data-itp_support="true"
+            ></div>
+
+            <div
+              class="g_id_signin"
+              data-type="standard"
+              data-shape="rectangular"
+              data-theme="outline"
+              data-text="signin_with"
+              data-size="large"
+              data-logo_alignment="left"
+            ></div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
