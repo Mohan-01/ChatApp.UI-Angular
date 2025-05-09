@@ -1,10 +1,10 @@
 import {
-  ChangePaswordRequest,
+  ChangePasswordRequest,
   ChangeUsernameRequest,
   ForgotPasswordRequest,
   ResetPasswordRequest,
   UpdateEmailRequest,
-} from './../models/auth.service.request.model';
+} from '../models/auth-service/auth.service.request.model';
 import { LocalStorageService } from './local-storage.service';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
@@ -21,8 +21,8 @@ import { environment } from '../environments/environment';
 import {
   AuthResponse,
   AuthServiceResponse,
-} from '../models/auth.service.response.model';
-import { RegisterRequest } from '../models/auth.service.request.model';
+} from '../models/auth-service/auth.service.response.model';
+import { RegisterRequest } from '../models/auth-service/auth.service.request.model';
 
 /**
  *
@@ -166,11 +166,11 @@ export class AuthService {
   }
 
   changePassword(
-    changePaswordRequest: ChangePaswordRequest
+    changePasswordRequest: ChangePasswordRequest
   ): Observable<AuthServiceResponse<string>> {
     return this.http.put<AuthServiceResponse<string>>(
       `${this.authApiUrl}/change-password`,
-      changePaswordRequest,
+      changePasswordRequest,
       { withCredentials: true }
     );
   }

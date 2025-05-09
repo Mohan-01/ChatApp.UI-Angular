@@ -1,0 +1,109 @@
+<form class="container-fluid d-flex" role="search" id="search-bar">
+  <input
+    class="form-control me-2"
+    type="search"
+    placeholder="Search for users..."
+    aria-label="Search"
+    [(ngModel)]="searchTerm"
+    name="searchTerm"
+    (keyup)="onSearchUsers()"
+  />
+</form>
+
+<div
+  class="dropdown-menu w-100 p-3"
+  [class.show]="isSearchActive"
+  [style.maxHeight]="'300px'"
+  [style.overflowY]="'auto'"
+>
+  <!-- If searchResults are found -->
+  <div
+    *ngIf="searchResults && searchResults.length > 0"
+    class="searchResults-list"
+  >
+    <div
+      *ngFor="let user of searchResults"
+      class="dropdown-item user-item d-flex align-items-center justify-content-between"
+    >
+      <ng-container *ngIf="user.username !== username">
+        <!-- User profile -->
+        <div class="d-flex align-items-center">
+          <img
+            [src]="user.profilePicture || 'assets/default-avatar.png'"
+            alt="Profile Picture"
+            class="me-3 rounded-circle"
+            style="width: 50px; height: 50px"
+          />
+          <div class="user-details">
+            <h6 class="mb-1">
+              {{ user.firstName }} {{ user.lastName }}
+              <small class="text-muted">{{ "@" + user.username }}</small>
+            </h6>
+            <small class="text-muted"
+              >Status: {{ user.status || "No status" }}</small
+            >
+          </div>
+        </div>
+
+        <!-- Action buttons -->
+        <div class="action-buttons text-end">
+          <!-- Add Friend -->
+          <button
+            *ngIf="
+              !user.isFriend && !user.hasSentRequest && !user.hasReceivedRequest
+            "
+            class="btn btn-sm btn-outline-primary"
+            (click)="sendFriendRequest(user.username)"
+          >
+            Add Friend
+          </button>
+
+          <!-- Message, Unfriend, Block if already friends -->
+          <div *ngIf="user.isFriend" class="d-flex">
+            <button
+              class="btn btn-sm btn-outline-success me-2"
+              (click)="createChat(user.username)"
+            >
+              Message
+            </button>
+            <button
+              class="btn btn-sm btn-outline-danger me-2"
+              (click)="unfriendUser(user.username)"
+            >
+              Unfriend
+            </button>
+            <button
+              class="btn btn-sm btn-outline-dark"
+              (click)="blockUser(user.username)"
+            >
+              Block
+            </button>
+          </div>
+
+          <!-- Cancel Friend Request (sent) -->
+          <button
+            *ngIf="user.hasSentRequest"
+            class="btn btn-sm btn-outline-secondary"
+            (click)="cancelFriendRequest(user.username)"
+          >
+            Cancel Request
+          </button>
+
+          <!-- Accept Friend Request (received) -->
+          <button
+            *ngIf="user.hasReceivedRequest"
+            class="btn btn-sm btn-outline-success"
+            (click)="acceptFriendRequest(user.username)"
+          >
+            Accept Request
+          </button>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+
+  <!-- If no searchResults found -->
+  <div *ngIf="searchResults?.length === 0 && searchTerm" class="text-muted">
+    No users found.
+  </div>
+</div>

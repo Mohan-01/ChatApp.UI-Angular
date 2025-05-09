@@ -3,9 +3,9 @@ import { Component, OnInit } from '@angular/core';
 import {
   InitializeResetPasswordRequest,
   ResetPasswordRequest,
-} from '../../models/auth.service.request.model';
+} from '../../models/auth-service/auth.service.request.model';
 import { AuthService } from '../../services/auth.service';
-import { AuthServiceResponse } from '../../models/auth.service.response.model';
+import { AuthServiceResponse } from '../../models/auth-service/auth.service.response.model';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';

@@ -17,7 +17,7 @@ export interface UpdateEmailRequest {
   newEmail: string;
 }
 
-export interface ChangePaswordRequest {
+export interface ChangePasswordRequest {
   newPassword: string;
 }
 
@@ -53,7 +53,7 @@ export const InitializeUpdateEmailRequest: UpdateEmailRequest = {
   newEmail: '',
 };
 
-export const InitializeChangePaswordRequest: ChangePaswordRequest = {
+export const InitializeChangePaswordRequest: ChangePasswordRequest = {
   newPassword: '',
 };
 

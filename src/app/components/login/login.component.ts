@@ -2,7 +2,7 @@ import {
   ForgotPasswordRequest,
   ForgotUsernameRequest,
   InitializeForgotPasswordRequest,
-} from './../../models/auth.service.request.model';
+} from '../../models/auth-service/auth.service.request.model';
 import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { AuthService } from '../../services/auth.service';
 import { Router, RouterModule } from '@angular/router';
@@ -14,11 +14,11 @@ import { LocalStorageService } from '../../services/local-storage.service';
 import {
   InitializeLoginRequest,
   LoginRequest,
-} from '../../models/auth.service.request.model';
+} from '../../models/auth-service/auth.service.request.model';
 import {
   AuthResponse,
   AuthServiceResponse,
-} from '../../models/auth.service.response.model';
+} from '../../models/auth-service/auth.service.response.model';
 
 declare const google: any;
 

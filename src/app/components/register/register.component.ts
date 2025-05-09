@@ -5,7 +5,7 @@ import { ToastService } from '../../services/toast.service';
 import {
   InitializeRegisterRequest,
   RegisterRequest,
-} from '../../models/auth.service.request.model';
+} from '../../models/auth-service/auth.service.request.model';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 
