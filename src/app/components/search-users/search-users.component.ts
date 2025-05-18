@@ -1,3 +1,4 @@
+import { ChatService } from './../../services/chat.service';
 import { CommonModule } from '@angular/common';
 import { Component, Input, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -8,6 +9,7 @@ import { ServiceResponse } from '../../models/chat-service/friendship/friendship
 import { FriendshipService } from '../../services/friendship.service';
 import { LocalStorageService } from '../../services/local-storage.service';
 import { ToastService } from '../../services/toast.service';
+import { UserDto } from '../../models/user-service/user.service.model';
 
 @Component({
   selector: 'app-search-users',
@@ -20,13 +22,14 @@ export class SearchUsersComponent implements OnInit {
   @Input() isSearchActive = false;
 
   searchTerm: string = '';
-  searchResults: Friend[] = [];
+  searchResults: UserDto[] = [];
   currentUsername: string | null = null;
 
   friends: Friend[] | null = null;
 
   constructor(
     private friendshipService: FriendshipService,
+    private chatService: ChatService,
     private localStorageService: LocalStorageService,
     private toastService: ToastService
   ) {}
@@ -53,6 +56,10 @@ export class SearchUsersComponent implements OnInit {
     });
   }
 
+  getChatByUsername(usernam2: string) {
+    this.chatService.getChatByUsernames(usernam2);
+  }
+
   // Perform search based on the searchTerm entered
   onSearchUsers(): void {
     const trimmedSearchTerm = this.searchTerm.trim();
@@ -66,23 +73,23 @@ export class SearchUsersComponent implements OnInit {
     this.isSearchActive = true;
 
     this.friendshipService.searchUsers(trimmedSearchTerm).subscribe({
-      next: (response: ServiceResponse<Friend[]>) => {
+      next: (response: ServiceResponse<UserDto[]>) => {
         const foundUsers = response.data ?? [];
 
-        this.searchResults = foundUsers.map((user: Friend) => {
-          const isFriend = this.friends
-            ?.map((friend) => friend.username)
-            .includes(user.username);
-          const hasSentRequest = user.friendStatus === 'Pending'; // Assuming your API gives friendshipStatus
-          const hasReceivedRequest = user.friendStatus === 'RequestReceived';
+        // this.searchResults = foundUsers.map((user: UserDto) => {
+        //   const isFriend = this.friends
+        //     ?.map((friend) => friend.username)
+        //     .includes(user.username);
+        //   const hasSentRequest = user.friendStatus === 'Pending'; // Assuming your API gives friendshipStatus
+        //   const hasReceivedRequest = user.friendStatus === 'RequestReceived';
 
-          return {
-            ...user,
-            isFriend,
-            hasSentRequest,
-            hasReceivedRequest,
-          };
-        });
+        //   return {
+        //     ...user,
+        //     isFriend,
+        //     hasSentRequest,
+        //     hasReceivedRequest,
+        //   };
+        // });
 
         console.log('Search results:', this.searchResults);
       },

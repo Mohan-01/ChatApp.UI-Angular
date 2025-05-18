@@ -7,6 +7,7 @@ import {
   Friend,
   FriendRequest,
 } from '../models/chat-service/friendship/friendship.model';
+import { UserDto } from '../models/user-service/user.service.model';
 
 @Injectable({
   providedIn: 'root',
@@ -17,8 +18,8 @@ export class FriendshipService {
   constructor(private http: HttpClient) {}
 
   // Search for users based on search term
-  searchUsers(searchTerm: string): Observable<ServiceResponse<Friend[]>> {
-    return this.http.get<ServiceResponse<Friend[]>>(
+  searchUsers(searchTerm: string): Observable<ServiceResponse<UserDto[]>> {
+    return this.http.get<ServiceResponse<UserDto[]>>(
       `${this.chatApiUrl}/searchUsers?searchTerm=${searchTerm}`,
       { withCredentials: true }
     );

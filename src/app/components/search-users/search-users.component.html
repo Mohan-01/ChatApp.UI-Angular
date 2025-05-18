@@ -25,7 +25,7 @@
       *ngFor="let user of searchResults"
       class="dropdown-item user-item d-flex align-items-center justify-content-between"
     >
-      <ng-container *ngIf="user.username !== username">
+      <ng-container *ngIf="user.username !== currentUsername">
         <!-- User profile -->
         <div class="d-flex align-items-center">
           <img
@@ -48,7 +48,7 @@
         <!-- Action buttons -->
         <div class="action-buttons text-end">
           <!-- Add Friend -->
-          <button
+          <!-- <button
             *ngIf="
               !user.isFriend && !user.hasSentRequest && !user.hasReceivedRequest
             "
@@ -56,17 +56,17 @@
             (click)="sendFriendRequest(user.username)"
           >
             Add Friend
-          </button>
+          </button> -->
 
           <!-- Message, Unfriend, Block if already friends -->
-          <div *ngIf="user.isFriend" class="d-flex">
+          <div class="d-flex">
             <button
               class="btn btn-sm btn-outline-success me-2"
-              (click)="createChat(user.username)"
+              (click)="getChatByUsername(user.username)"
             >
               Message
             </button>
-            <button
+            <!-- <button
               class="btn btn-sm btn-outline-danger me-2"
               (click)="unfriendUser(user.username)"
             >
@@ -77,26 +77,26 @@
               (click)="blockUser(user.username)"
             >
               Block
-            </button>
+            </button> -->
           </div>
 
           <!-- Cancel Friend Request (sent) -->
-          <button
+          <!-- <button
             *ngIf="user.hasSentRequest"
             class="btn btn-sm btn-outline-secondary"
             (click)="cancelFriendRequest(user.username)"
           >
             Cancel Request
-          </button>
+          </button> -->
 
           <!-- Accept Friend Request (received) -->
-          <button
+          <!-- <button
             *ngIf="user.hasReceivedRequest"
             class="btn btn-sm btn-outline-success"
             (click)="acceptFriendRequest(user.username)"
           >
             Accept Request
-          </button>
+          </button> -->
         </div>
       </ng-container>
     </div>
