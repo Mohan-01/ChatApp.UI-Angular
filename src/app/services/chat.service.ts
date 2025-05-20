@@ -3,39 +3,46 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../environments/environment';
 import { PrivateChatDto } from '../models/chat-service/chat/chat.model';
+import { ServiceResponse } from '../models/response.model';
+import { MessageDto } from '../models/chat-service/Message/message.model';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ChatService {
   private apiUrl = environment.chatApiUrl; // Replace with your actual API URL
-  private createHeaders(): HttpHeaders {
-    return new HttpHeaders({
-      'Ocp-Apim-Subscription-Key': 'ed98709dead64eca845fca9e43b933cb',
-    });
-  }
 
   constructor(private http: HttpClient) {}
 
-  getMessages(chatId: string): Observable<PrivateChatDto> {
-    return this.http.get<PrivateChatDto>(`${this.apiUrl}/chat/${chatId}`, {
-      headers: this.createHeaders(),
-    });
-  }
-
-  getChatsByUsername(username: string): Observable<PrivateChatDto[]> {
-    return this.http.get<PrivateChatDto[]>(
-      `${this.apiUrl}/chat/user/${username}`,
+  getMessages(chatId: string): Observable<ServiceResponse<MessageDto[]>> {
+    return this.http.get<ServiceResponse<MessageDto[]>>(
+      `${this.apiUrl}/message/chat/${chatId}`,
       {
-        headers: this.createHeaders(),
+        withCredentials: true,
       }
     );
   }
 
-  getChatByUsernames(username2: string): Observable<PrivateChatDto> {
-    return this.http.get<PrivateChatDto>(`${this.apiUrl}/chat/${username2}`, {
-      headers: this.createHeaders(),
-    });
+  getChatsByUsername(
+    username: string
+  ): Observable<ServiceResponse<PrivateChatDto[]>> {
+    return this.http.get<ServiceResponse<PrivateChatDto[]>>(
+      `${this.apiUrl}/chat/user/${username}`,
+      {
+        withCredentials: true,
+      }
+    );
+  }
+
+  getChatByUsernames(
+    username2: string
+  ): Observable<ServiceResponse<PrivateChatDto>> {
+    return this.http.get<ServiceResponse<PrivateChatDto>>(
+      `${this.apiUrl}/chat/${username2}`,
+      {
+        withCredentials: true,
+      }
+    );
   }
 
   sendMessage(body: {
@@ -44,7 +51,7 @@ export class ChatService {
     text: string;
   }): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/message/send`, body, {
-      headers: this.createHeaders(),
+      withCredentials: true,
     });
   }
 
@@ -52,7 +59,7 @@ export class ChatService {
     return this.http.post<PrivateChatDto>(
       `${this.apiUrl}/chat/create`,
       { username1, username2 },
-      { headers: this.createHeaders() }
+      { withCredentials: true }
     );
   }
 }

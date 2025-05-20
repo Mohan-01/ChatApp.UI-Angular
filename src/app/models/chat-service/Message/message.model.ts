@@ -1,11 +1,21 @@
 export interface MessageDto {
-  MessageId: string;
-  From: string;
-  To: string;
-  Time: Date;
-  Text: string;
-  MessageType: string;
-  RepliedTo: string;
-  IsEdited: boolean;
-  MessageStatus: string;
+  messageId: string;
+  from: string;
+  to: string;
+  time: Date;
+  text: string;
+  messageType: string;
+  repliedTo: string;
+  isEdited: boolean;
+  messageStatus: string;
+}
+
+export interface SendMessageDto {
+  chatId: string;
+  from: string;
+  to: string;
+  time: Date;
+  text: string;
+  messageType: string;
+  repliedTo?: string;
 }

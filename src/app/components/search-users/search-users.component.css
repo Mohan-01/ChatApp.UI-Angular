@@ -1,0 +1,13 @@
+.hover-bg-light:hover {
+  background-color: #f8f9fa;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+img {
+  object-fit: contain;
+  width: 20px;
+  height: 20px;
+}

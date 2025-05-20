@@ -3,7 +3,10 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../environments/environment';
-import { UserDto } from '../models/user-service/user.service.model';
+import {
+  SearchUserDto,
+  UserDto,
+} from '../models/user-service/user.service.model';
 import { UserServiceResponse } from '../models/user-service/user.service.response.model';
 import {
   SearchUsersRequest,
@@ -14,7 +17,8 @@ import {
  *
  * Get User Profile
  * Update User details
- * Search the Users
+ * Search the Users : SearchUserDto
+ *
  */
 
 @Injectable({
@@ -44,9 +48,9 @@ export class UserService {
   }
   searchUsers(
     searchUsersRequest: SearchUsersRequest
-  ): Observable<UserServiceResponse<UserDto[]>> {
-    return this.http.get<UserServiceResponse<UserDto[]>>(
-      `/search?searchTerm=${searchUsersRequest.searchTerm}`,
+  ): Observable<UserServiceResponse<SearchUserDto[]>> {
+    return this.http.get<UserServiceResponse<SearchUserDto[]>>(
+      `${this.userApiUrl}/search?searchTerm=${searchUsersRequest.searchTerm}`,
       {
         withCredentials: true,
       }

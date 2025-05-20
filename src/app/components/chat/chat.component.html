@@ -1,0 +1,104 @@
+<div class="chat-interface">
+  <!-- Back Button for Mobile -->
+  <div class="chat-header">
+    <button
+      class="btn btn-light back-btn d-lg-none"
+      (click)="goBack()"
+      aria-label="Back to chats"
+    >
+      <i class="bi bi-arrow-left"></i> Back
+    </button>
+
+    <!-- Chat Title with Profile Picture -->
+    <div class="chat-title" (click)="toggleProfile()">
+      <img
+        src="assets/default-avatar.png"
+        alt="Profile Picture"
+        class="chat-title-pic"
+      />
+      <h5 style="cursor: pointer">
+        <!-- <h5 style="cursor: pointer" (click)="getProfileOfToUser()"> -->
+        {{ toUser }}
+      </h5>
+    </div>
+
+    <!-- Profile Hover Box -->
+    <div *ngIf="showProfile && toUserProfile" class="profile-hover-box">
+      <div class="profile-content shadow">
+        <!-- Profile Picture -->
+        <div class="text-center">
+          <img
+            [src]="toUserProfile.profilePicture || 'assets/default-avatar.png'"
+            alt="Profile Picture"
+            class="profile-pic rounded-circle"
+          />
+          <h3 class="mt-2">
+            {{ toUserProfile.firstName }}
+            {{ toUserProfile.middleName || "" }} {{ toUserProfile.lastName }}
+          </h3>
+          <p class="text-muted">{{ "@" }}{{ toUserProfile.username }}</p>
+        </div>
+
+        <hr />
+
+        <div class="profile-details">
+          <p><strong>Email:</strong> {{ toUserProfile.email }}</p>
+          <p *ngIf="toUserProfile.phone">
+            <strong>Phone:</strong> {{ toUserProfile.phone }}
+          </p>
+          <p><strong>Status:</strong> {{ toUserProfile.status }}</p>
+          <p>
+            <strong>Last Seen:</strong>
+            {{ toUserProfile.lastSeen | date : "short" }}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dim Background -->
+    <div
+      *ngIf="showProfile"
+      class="dim-background"
+      (click)="closeProfile($event)"
+      aria-hidden="true"
+    ></div>
+  </div>
+
+  <!-- Messages -->
+  <div class="messages-container" #messagesContainer>
+    <div
+      *ngFor="let message of messages$ | async"
+      class="message"
+      [ngClass]="{
+        'message-sent': message.from === currentUsername,
+        'message-received': message.from !== currentUsername
+      }"
+    >
+      <p class="message-text">{{ message.text }}</p>
+      <span class="message-time">{{ message.time | date : "shortTime" }}</span>
+      <span *ngIf="message.from === this.currentUsername">
+        {{ message.messageStatus }}
+      </span>
+    </div>
+  </div>
+
+  <!-- Message Input -->
+  <div class="message-input">
+    <input
+      #messageInput
+      type="text"
+      [(ngModel)]="newMessageText"
+      placeholder="Type a message..."
+      class="form-control"
+      (keydown.enter)="sendMessage()"
+      aria-label="Type a message"
+    />
+    <button
+      class="btn btn-primary"
+      (click)="sendMessage()"
+      aria-label="Send message"
+    >
+      Send
+    </button>
+  </div>
+</div>

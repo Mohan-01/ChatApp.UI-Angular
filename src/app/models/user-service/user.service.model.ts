@@ -10,6 +10,15 @@ export interface UserDto {
   lastSeen: Date;
 }
 
+export interface SearchUserDto {
+  username: string;
+  firstName: string;
+  lastName: string;
+  profilePicture?: string;
+  status: string;
+  lastSeen: Date;
+}
+
 export enum UserStatus {
   Online,
   Offline,
@@ -30,5 +39,14 @@ export const InitializeUserDto: UserDto = {
   phone: undefined,
   profilePicture: undefined,
   status: undefined,
+  lastSeen: new Date(Date.UTC(1900, 1, 1)),
+};
+
+export const InitializeSearchUserDto: SearchUserDto = {
+  username: '',
+  firstName: '',
+  lastName: '',
+  profilePicture: '',
+  status: '',
   lastSeen: new Date(Date.UTC(1900, 1, 1)),
 };

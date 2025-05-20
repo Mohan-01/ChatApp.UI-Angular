@@ -1,109 +1,94 @@
-<form class="container-fluid d-flex" role="search" id="search-bar">
-  <input
-    class="form-control me-2"
-    type="search"
-    placeholder="Search for users..."
-    aria-label="Search"
-    [(ngModel)]="searchTerm"
-    name="searchTerm"
-    (keyup)="onSearchUsers()"
-  />
-</form>
-
+<!-- Desktop Search Bar -->
 <div
-  class="dropdown-menu w-100 p-3"
-  [class.show]="isSearchActive"
-  [style.maxHeight]="'300px'"
-  [style.overflowY]="'auto'"
+  class="position-absolute top-50 start-50 translate-middle d-none d-lg-block"
+  style="width: 35%; z-index: 1050"
 >
-  <!-- If searchResults are found -->
+  <form
+    class="d-flex w-100"
+    role="search"
+    (submit)="onSearchUsers(); $event.preventDefault()"
+  >
+    <input
+      [(ngModel)]="searchTerm"
+      name="desktopSearch"
+      class="form-control w-100"
+      type="search"
+      placeholder="Search"
+      aria-label="Search"
+      (input)="onSearchUsers()"
+    />
+  </form>
+
+  <!-- Search Results -->
+  <div *ngIf="searchResults.length == 0">No Users found</div>
   <div
-    *ngIf="searchResults && searchResults.length > 0"
-    class="searchResults-list"
+    *ngIf="searchResults.length > 0"
+    class="bg-white border rounded mt-1 shadow position-absolute"
+    style="width: 100%; max-height: 300px; overflow-y: auto; z-index: 1060"
   >
     <div
       *ngFor="let user of searchResults"
-      class="dropdown-item user-item d-flex align-items-center justify-content-between"
+      class="p-2 border-bottom hover-bg-light cursor-pointer"
+      (click)="getChatByUsername(user.username)"
     >
-      <ng-container *ngIf="user.username !== currentUsername">
-        <!-- User profile -->
-        <div class="d-flex align-items-center">
-          <img
-            [src]="user.profilePicture || 'assets/default-avatar.png'"
-            alt="Profile Picture"
-            class="me-3 rounded-circle"
-            style="width: 50px; height: 50px"
-          />
-          <div class="user-details">
-            <h6 class="mb-1">
-              {{ user.firstName }} {{ user.lastName }}
-              <small class="text-muted">{{ "@" + user.username }}</small>
-            </h6>
-            <small class="text-muted"
-              >Status: {{ user.status || "No status" }}</small
-            >
-          </div>
-        </div>
-
-        <!-- Action buttons -->
-        <div class="action-buttons text-end">
-          <!-- Add Friend -->
-          <!-- <button
-            *ngIf="
-              !user.isFriend && !user.hasSentRequest && !user.hasReceivedRequest
-            "
-            class="btn btn-sm btn-outline-primary"
-            (click)="sendFriendRequest(user.username)"
-          >
-            Add Friend
-          </button> -->
-
-          <!-- Message, Unfriend, Block if already friends -->
-          <div class="d-flex">
-            <button
-              class="btn btn-sm btn-outline-success me-2"
-              (click)="getChatByUsername(user.username)"
-            >
-              Message
-            </button>
-            <!-- <button
-              class="btn btn-sm btn-outline-danger me-2"
-              (click)="unfriendUser(user.username)"
-            >
-              Unfriend
-            </button>
-            <button
-              class="btn btn-sm btn-outline-dark"
-              (click)="blockUser(user.username)"
-            >
-              Block
-            </button> -->
-          </div>
-
-          <!-- Cancel Friend Request (sent) -->
-          <!-- <button
-            *ngIf="user.hasSentRequest"
-            class="btn btn-sm btn-outline-secondary"
-            (click)="cancelFriendRequest(user.username)"
-          >
-            Cancel Request
-          </button> -->
-
-          <!-- Accept Friend Request (received) -->
-          <!-- <button
-            *ngIf="user.hasReceivedRequest"
-            class="btn btn-sm btn-outline-success"
-            (click)="acceptFriendRequest(user.username)"
-          >
-            Accept Request
-          </button> -->
-        </div>
-      </ng-container>
+      <img
+        src="{{ user.profilePicture || 'assets/default-avatar.png' }}"
+        alt="profile"
+      />
+      {{ user.username }}
     </div>
   </div>
+</div>
 
-  <!-- If no searchResults found -->
-  <div *ngIf="searchResults?.length === 0 && searchTerm" class="text-muted">
-    No users found.
+<!-- Mobile Search Bar -->
+<div class="d-lg-none w-100 my-2 position-relative">
+  <form
+    class="d-flex w-100"
+    role="search"
+    (submit)="onSearchUsers(); $event.preventDefault()"
+  >
+    <input
+      [(ngModel)]="searchTerm"
+      name="mobileSearch"
+      class="form-control w-100"
+      type="search"
+      placeholder="Search"
+      aria-label="Search"
+      (input)="onSearchUsers()"
+    />
+    <div class="d-flex align-items-center ms-auto">
+      <!-- Toggler button (hamburger menu) -->
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#navbarTogglerDemo02"
+        aria-controls="navbarTogglerDemo02"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+    </div>
+  </form>
+
+  <!-- Mobile Results -->
+  <div
+    *ngIf="searchResults.length > 0"
+    class="bg-white border rounded mt-1 shadow position-absolute"
+    style="width: 100%; max-height: 300px; overflow-y: auto; z-index: 1060"
+  >
+    <a
+      *ngFor="let user of searchResults"
+      class="p-2 border-bottom hover-bg-light cursor-pointer"
+      [routerLink]="['/chat', user.username]"
+      routerLinkActive="router-link-active"
+    >
+      <img
+        src="{{ user.profilePicture || 'assets/default-avatar.png' }}"
+        alt="profile"
+      />
+      {{ user.username }}
+    </a>
   </div>
 </div>
