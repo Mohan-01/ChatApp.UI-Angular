@@ -149,24 +149,21 @@ export class ChatComponent {
 
     const tempMessage = this.createMessage();
     this.signalRService.sendMessage(tempMessage);
-    this.addMessage({
-      messageId: new Date(Date.now()).toLocaleTimeString(),
-      from: tempMessage.from,
-      to: tempMessage.to,
-      time: tempMessage.time,
-      text: tempMessage.text,
-      messageType: tempMessage.messageType,
-      repliedTo: '',
-      isEdited: false,
-      messageStatus: 'Sending',
-    });
+    // this.addMessage({
+    //   messageId: new Date(Date.now()).toLocaleTimeString(),
+    //   clientId: v4(),
+    //   from: tempMessage.from,
+    //   to: tempMessage.to,
+    //   time: tempMessage.time,
+    //   text: tempMessage.text,
+    //   messageType: tempMessage.messageType,
+    //   repliedTo: '',
+    //   isEdited: false,
+    //   messageStatus: 'Sending',
+    // });
     // this.addMessage(tempMessage);
     this.newMessageText = '';
   }
-
-  // goToUserProfile(username: string | null): void {
-  //   this.router.navigate(['/profile', username]);
-  // }
 
   private setupSignalRListeners(): void {
     // Subscribe to connection state changes
@@ -193,10 +190,10 @@ export class ChatComponent {
     //     currentMessages.map((msg) => ({
     //       ...msg,
     //       messageStatus: statusMap.get(msg.messageId) || msg.messageStatus,
-    //     }))
-    //   );
+    //     }))    //   );
     // });
     this.signalRService.messageStatus$.subscribe((statusMap) => {
+      console.log({ statusMap });
       const updatedMessages = this.messagesSubject.value.map((msg) => {
         if (statusMap.has(msg.messageId)) {
           return {
@@ -206,7 +203,7 @@ export class ChatComponent {
         }
         return msg;
       });
-
+      console.log({ updatedMessages });
       this.messagesSubject.next(updatedMessages);
     });
   }
@@ -238,14 +235,6 @@ export class ChatComponent {
       (response: ServiceResponse<MessageDto[]>) => {
         console.log({ response });
         const messages = response.data;
-        // messages.forEach((msg) => {
-        //   if (
-        //     msg.to.toLowerCase() === this.currentUsername &&
-        //     msg.messageStatus.toLowerCase() !== 'seen'
-        //   ) {
-        //     this.signalRService.markMessageAsRead(msg);
-        //   }
-        // });
 
         this.messagesSubject.next(messages);
         console.log({ messages });
@@ -359,10 +348,4 @@ export class ChatComponent {
   }
 
   //#endregion
-
-  // ngOnChanges(changes: SimpleChanges): void {
-  //   if (changes['selectedChat']?.currentValue) {
-  //     this.loadMessageDtos();
-  //   }
-  // }
 }

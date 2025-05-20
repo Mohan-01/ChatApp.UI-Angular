@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import * as signalR from '@microsoft/signalr'; // Use the correct import for signalR
 import { BehaviorSubject } from 'rxjs';
 import {
+  ChangeMessageStatus,
   MessageDto,
   SendMessageDto,
 } from '../models/chat-service/Message/message.model';
@@ -14,6 +15,10 @@ import { environment } from '../environments/environment';
 })
 export class SignlaRService {
   private hubConnection!: signalR.HubConnection;
+
+  private messages: MessageDto[] = [];
+  private messagesSubject = new BehaviorSubject<MessageDto[]>([]);
+  public messages$ = this.messagesSubject.asObservable();
 
   // Subjects for real-time data streaming
   private messageReceivedSubject = new BehaviorSubject<MessageDto | null>(null);
@@ -129,7 +134,10 @@ export class SignlaRService {
     this.hubConnection.on(
       'MessageStatusUpdated',
       (updatedMessage: MessageDto) => {
-        console.log({ updatedMessage });
+        this.messageReceivedSubject.next({
+          ...updatedMessage,
+          messageStatus: updatedMessage.messageStatus,
+        });
         if (updatedMessage.messageId && updatedMessage.messageStatus) {
           this.messageStatusMap.set(
             updatedMessage.messageId,
@@ -166,7 +174,7 @@ export class SignlaRService {
     }
   }
 
-  public markMessageAsRead(message: MessageDto): void {
+  public markMessageAsRead(message: ChangeMessageStatus): void {
     if (
       this.hubConnection &&
       this.hubConnection.state === signalR.HubConnectionState.Connected
@@ -196,5 +204,21 @@ export class SignlaRService {
           console.error('Error while stopping SignalR connection:', err);
         });
     }
+  }
+
+  private upsertMessage(message: MessageDto): void {
+    const index = this.messages.findIndex(
+      (m) =>
+        (message.clientId && m.clientId === message.clientId) ||
+        (message.messageId && m.messageId === message.messageId)
+    );
+
+    if (index !== -1) {
+      this.messages[index] = { ...this.messages[index], ...message };
+    } else {
+      this.messages.push(message);
+    }
+
+    this.messagesSubject.next([...this.messages]);
   }
 }

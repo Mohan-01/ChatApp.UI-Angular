@@ -1,5 +1,6 @@
 export interface MessageDto {
   messageId: string;
+  clientId: string;
   from: string;
   to: string;
   time: Date;
@@ -18,4 +19,11 @@ export interface SendMessageDto {
   text: string;
   messageType: string;
   repliedTo?: string;
+}
+
+export interface ChangeMessageStatus {
+  messageId: string;
+  from: string;
+  to: string;
+  messageStatus: string;
 }
