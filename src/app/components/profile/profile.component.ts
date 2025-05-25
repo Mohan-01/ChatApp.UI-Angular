@@ -1,23 +1,35 @@
 import {
-  ChangePaswordRequest,
+  ChangePasswordRequest,
   InitializeChangePaswordRequest,
-} from './../../models/auth.service.request.model';
+} from '../../models/auth-service/auth.service.request.model';
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { UserResponse } from '../../models/User.model';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
 import { LocalStorageService } from '../../services/local-storage.service';
 import { ToastService } from '../../services/toast.service';
-import { AuthUser, InitializeAuthUser } from '../../models/auth.service.model';
+import {
+  AuthUser,
+  InitializeAuthUser,
+} from '../../models/auth-service/auth.service.model';
 import {
   ChangeUsernameRequest,
   InitializeChangeUsernameRequest,
   InitializeUpdateEmailRequest,
   UpdateEmailRequest,
-} from '../../models/auth.service.request.model';
-import { AuthServiceResponse } from '../../models/auth.service.response.model';
+} from '../../models/auth-service/auth.service.request.model';
+import { AuthServiceResponse } from '../../models/auth-service/auth.service.response.model';
+import {
+  InitializeUserDto,
+  UserDto,
+} from '../../models/user-service/user.service.model';
+import {
+  InitializeUpdateUserRequest,
+  UpdateUserRequest,
+} from '../../models/user-service/user.service.request.model';
+import { UserService } from '../../services/user.service';
+import { UserServiceResponse } from '../../models/user-service/user.service.response.model';
 
 @Component({
   selector: 'app-user-profile',
@@ -27,19 +39,14 @@ import { AuthServiceResponse } from '../../models/auth.service.response.model';
   styleUrls: ['./profile.component.css'],
 })
 export class ProfileComponent implements OnInit {
-  user: UserResponse | null = null;
-  isEditing = false;
-  isPasswordReset = false;
-  isPasswordChange = false;
-  errorMessage = '';
-  successMessage = '';
-  resetToken = '';
+  errorMessage: string = '';
+  successMessage: string = '';
   defaultProfilePicture =
     'https://th.bing.com/th/id/OIP.8lH9SOh2rz2dCyU_9zVJGgHaHV?w=181&h=180&c=7&r=0&o=5&pid=1.7';
 
-  // Password reset fields
+  //#region Authservice Related
+  isPasswordChange: boolean = false;
   confirmPassword = '';
-
   authFieldDisabled = {
     username: true,
     email: true,
@@ -50,15 +57,29 @@ export class ProfileComponent implements OnInit {
 
   changeUsernameRequest: ChangeUsernameRequest;
   updateEmailRequest: UpdateEmailRequest;
-  changePaswordRequest: ChangePaswordRequest;
+  changePaswordRequest: ChangePasswordRequest;
+  //#endregion
+
+  //#region Userservice Related
+  userProfileDetails: UserDto;
+  updateUserRequest: UpdateUserRequest;
+  editProfileDetails: boolean = false;
+  //#endregion
 
   constructor(
-    // private userService: UserService,
+    private userService: UserService,
     private authService: AuthService,
     private router: Router,
     private localStorageService: LocalStorageService,
     private toastService: ToastService
   ) {
+    //#region Userservice Related
+    this.userProfileDetails = InitializeUserDto;
+    this.updateUserRequest = InitializeUpdateUserRequest;
+
+    //#endregion
+
+    //#region Authservice Related
     this.changeUsernameRequest = InitializeChangeUsernameRequest;
     this.updateEmailRequest = InitializeUpdateEmailRequest;
     this.changePaswordRequest = InitializeChangePaswordRequest;
@@ -75,36 +96,14 @@ export class ProfileComponent implements OnInit {
     this.authServiceFields.email = localStoredEmail;
     this.changeUsernameRequest.newUsername = this.authServiceFields.username;
     this.updateEmailRequest.newEmail = this.authServiceFields.email;
+    //#endregion
   }
 
   ngOnInit(): void {
-    // this.loadUserProfile();
+    this.getUserProfileDetails();
   }
 
-  /*
-  loadUserProfile(): void {
-    if (!this.username) return;
-
-    this.userService.getUserByUsername(this.username).subscribe(
-      (data: UserResponse) => {
-        this.user = data;
-        this.clearMessages();
-      },
-      (error: any) => {
-        this.toastService.showToast(
-          error.error?.message || 'Failed to load user profile',
-          'danger'
-        );
-      }
-    );
-  }
-*/
-  enableEdit(): void {
-    this.isEditing = true;
-    this.isPasswordReset = false;
-    this.clearMessages();
-  }
-
+  //#region AuthService Related
   disableUsername(disable: boolean): void {
     this.authFieldDisabled.username = disable;
     this.changeUsernameRequest.newUsername = this.authServiceFields.username;
@@ -161,8 +160,10 @@ export class ProfileComponent implements OnInit {
     if (
       !this.changePaswordRequest.newPassword ||
       this.changePaswordRequest.newPassword !== this.confirmPassword
-    )
+    ) {
+      this.toastService.showToast('Passwords do not match', 'danger');
       return;
+    }
 
     this.authService.changePassword(this.changePaswordRequest).subscribe({
       next: (response: AuthServiceResponse<string>) => {
@@ -175,73 +176,6 @@ export class ProfileComponent implements OnInit {
     });
   }
 
-  enablePasswordChange(): void {
-    this.isPasswordChange = true;
-    this.isEditing = false;
-    this.clearMessages();
-    this.clearPasswordFields();
-    this.changePassword();
-  }
-  /*
-  saveChanges(): void {
-    if (this.user && this.username) {
-      const updatedData = {
-        firstName: this.user.firstName,
-        middleName: this.user.middleName,
-        lastName: this.user.lastName,
-        email: this.user.email,
-        phone: this.user.phone,
-        profilePicture: this.user.profilePicture || this.defaultProfilePicture,
-        status: this.user.status,
-      };
-
-      this.userService.updateUser(this.username, updatedData).subscribe(
-        () => {
-          this.toastService.showToast(
-            'Profile updated successfully!',
-            'success'
-          );
-          this.isEditing = false;
-          this.loadUserProfile();
-        },
-        (error) => {
-          this.handleError('Failed to update user profile.', error);
-        }
-      );
-    }
-  }
-*/
-  /*
-  resetPassword(): void {
-    if (this.newPassword !== this.confirmPassword) {
-      this.toastService.showToast('Passwords do not match', 'warning');
-      return;
-    }
-
-    const payload = {
-      resetToken: this.resetToken,
-      newPassword: this.newPassword,
-    };
-
-    this.authService.resetPassword(payload).subscribe({
-      next: () => {
-        this.toastService.showToast('Password reset successfully.', 'success');
-        this.isPasswordReset = false;
-        this.clearPasswordFields();
-      },
-      error: (error) => {
-        this.handleError('Failed to reset password.', error);
-      },
-    });
-  }
-  
-  cancelEdit(): void {
-    this.isEditing = false;
-    this.isPasswordReset = false;
-    this.clearMessages();
-    this.loadUserProfile();
-  }
-*/
   deleteUser(): void {
     if (confirm('Are you sure you want to delete your account?')) {
       this.authService.deleteUser().subscribe({
@@ -256,13 +190,54 @@ export class ProfileComponent implements OnInit {
     }
   }
 
-  private clearMessages(): void {
-    this.errorMessage = '';
-    this.successMessage = '';
+  //#endregion
+
+  enablePasswordChange() {
+    this.isPasswordChange = true;
   }
 
-  private clearPasswordFields(): void {
-    this.confirmPassword = '';
+  getUserProfileDetails(): void {
+    this.userService.getUserProfileDetails().subscribe({
+      next: (response: UserServiceResponse<UserDto>) => {
+        if (!response.success || !response.data) {
+          this.toastService.showToast(response.message, 'danger');
+          return;
+        }
+        this.userProfileDetails = response.data;
+        this.updateUserRequest = response.data;
+      },
+      error: (error: any) => {
+        this.toastService.showToast(error?.error?.message, 'danger');
+      },
+    });
+  }
+
+  updateUserDetails(): void {
+    this.userService.updateUser(this.updateUserRequest).subscribe({
+      next: (response: UserServiceResponse<UserDto>) => {
+        if (!response.success || !response.data) {
+          this.toastService.showToast(response.message, 'danger');
+          return;
+        }
+
+        this.userProfileDetails = response.data;
+        this.editProfileDetails = false;
+
+        this.toastService.showToast(response.message, 'success');
+      },
+      error: (error: any) => {
+        this.toastService.showToast(error?.error?.message, 'danger');
+      },
+    });
+  }
+
+  editProfileEdit(): void {
+    this.editProfileDetails = true;
+  }
+
+  cancelEdit(): void {
+    this.editProfileDetails = false;
+    this.getUserProfileDetails();
   }
 
   private handleError(message: string, error: any): void {

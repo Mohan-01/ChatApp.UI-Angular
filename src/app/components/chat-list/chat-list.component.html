@@ -1,0 +1,43 @@
+<div class="chat-container">
+  <div class="chat-list">
+    <div *ngIf="error" class="error">{{ error }}</div>
+
+    <ul class="list-group chat-list-items" *ngIf="!error">
+      <li
+        *ngFor="let chat of chats"
+        [routerLink]="[
+          '/chat',
+          chat.username1 === currentUsername ? chat.username2 : chat.username1
+        ]"
+        routerLinkActive="router-link-active"
+        class="list-group-item chat-item"
+      >
+        <div class="chat-user">
+          <img src="assets/default-avatar.png" class="chat-avatar" alt="User" />
+          <div class="chat-details">
+            <h6 class="chat-name">
+              {{
+                chat.username1 === currentUsername
+                  ? chat.username2
+                  : chat.username1
+              }}
+            </h6>
+            <p class="last-message">
+              {{
+                chat.messages.length
+                  ? chat.messages[chat.messages.length - 1].text
+                  : "No messages yet"
+              }}
+            </p>
+          </div>
+        </div>
+        <span class="chat-time">{{ chat.createdAt | date : "shortTime" }}</span>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Chat Interface (Only on Desktop) -->
+  <div class="chat-interface-container d-none d-lg-block">
+    <router-outlet></router-outlet>
+  </div>
+</div>

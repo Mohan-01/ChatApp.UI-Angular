@@ -4,8 +4,8 @@ import { FormsModule } from '@angular/forms';
 import {
   ForgotUsernameRequest,
   InitializeForgotPasswordRequest,
-} from '../../models/auth.service.request.model';
-import { AuthServiceResponse } from '../../models/auth.service.response.model';
+} from '../../models/auth-service/auth.service.request.model';
+import { AuthServiceResponse } from '../../models/auth-service/auth.service.response.model';
 import { ToastService } from '../../services/toast.service';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';

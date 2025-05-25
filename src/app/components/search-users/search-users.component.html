@@ -1,0 +1,94 @@
+<!-- Desktop Search Bar -->
+<div
+  class="position-absolute top-50 start-50 translate-middle d-none d-lg-block"
+  style="width: 35%; z-index: 1050"
+>
+  <form
+    class="d-flex w-100"
+    role="search"
+    (submit)="onSearchUsers(); $event.preventDefault()"
+  >
+    <input
+      [(ngModel)]="searchTerm"
+      name="desktopSearch"
+      class="form-control w-100"
+      type="search"
+      placeholder="Search"
+      aria-label="Search"
+      (input)="onSearchUsers()"
+    />
+  </form>
+
+  <!-- Search Results -->
+  <div *ngIf="searchResults.length == 0">No Users found</div>
+  <div
+    *ngIf="searchResults.length > 0"
+    class="bg-white border rounded mt-1 shadow position-absolute"
+    style="width: 100%; max-height: 300px; overflow-y: auto; z-index: 1060"
+  >
+    <div
+      *ngFor="let user of searchResults"
+      class="p-2 border-bottom hover-bg-light cursor-pointer"
+      (click)="getChatByUsername(user.username)"
+    >
+      <img
+        src="{{ user.profilePicture || 'assets/default-avatar.png' }}"
+        alt="profile"
+      />
+      {{ user.username }}
+    </div>
+  </div>
+</div>
+
+<!-- Mobile Search Bar -->
+<div class="d-lg-none w-100 my-2 position-relative">
+  <form
+    class="d-flex w-100"
+    role="search"
+    (submit)="onSearchUsers(); $event.preventDefault()"
+  >
+    <input
+      [(ngModel)]="searchTerm"
+      name="mobileSearch"
+      class="form-control w-100"
+      type="search"
+      placeholder="Search"
+      aria-label="Search"
+      (input)="onSearchUsers()"
+    />
+    <div class="d-flex align-items-center ms-auto">
+      <!-- Toggler button (hamburger menu) -->
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#navbarTogglerDemo02"
+        aria-controls="navbarTogglerDemo02"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+    </div>
+  </form>
+
+  <!-- Mobile Results -->
+  <div
+    *ngIf="searchResults.length > 0"
+    class="bg-white border rounded mt-1 shadow position-absolute"
+    style="width: 100%; max-height: 300px; overflow-y: auto; z-index: 1060"
+  >
+    <a
+      *ngFor="let user of searchResults"
+      class="p-2 border-bottom hover-bg-light cursor-pointer"
+      [routerLink]="['/chat', user.username]"
+      routerLinkActive="router-link-active"
+    >
+      <img
+        src="{{ user.profilePicture || 'assets/default-avatar.png' }}"
+        alt="profile"
+      />
+      {{ user.username }}
+    </a>
+  </div>
+</div>

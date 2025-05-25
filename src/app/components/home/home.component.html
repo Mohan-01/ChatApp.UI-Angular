@@ -1,1 +1,17 @@
-<p>home works!</p>
+@if (isAuthenticated$ | async) {
+<app-chat-list></app-chat-list>
+} @else {
+<div class="container home-container">
+  <!-- User not logged in -->
+  <div class="home-hero">
+    <div class="home-hero-content">
+      <h1>Welcome to ChatApp</h1>
+      <p>Chat, connect, and share with your friends instantly.</p>
+      <div class="home-buttons">
+        <a routerLink="/login" class="btn btn-primary">Login</a>
+        <a routerLink="/register" class="btn btn-outline-secondary">Sign Up</a>
+      </div>
+    </div>
+  </div>
+</div>
+}

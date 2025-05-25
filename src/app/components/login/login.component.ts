@@ -2,11 +2,11 @@ import {
   ForgotPasswordRequest,
   ForgotUsernameRequest,
   InitializeForgotPasswordRequest,
-} from './../../models/auth.service.request.model';
-import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+} from '../../models/auth-service/auth.service.request.model';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, OnInit } from '@angular/core';
 import { AuthService } from '../../services/auth.service';
-import { Router, RouterModule } from '@angular/router';
-import { CommonModule } from '@angular/common';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { ToastService } from '../../services/toast.service';
@@ -14,11 +14,11 @@ import { LocalStorageService } from '../../services/local-storage.service';
 import {
   InitializeLoginRequest,
   LoginRequest,
-} from '../../models/auth.service.request.model';
+} from '../../models/auth-service/auth.service.request.model';
 import {
   AuthResponse,
   AuthServiceResponse,
-} from '../../models/auth.service.response.model';
+} from '../../models/auth-service/auth.service.response.model';
 
 declare const google: any;
 
@@ -30,7 +30,7 @@ declare const google: any;
   styleUrl: './login.component.css',
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   isLoading: boolean = false;
   errorMessage: string = '';
 
@@ -40,9 +40,22 @@ export class LoginComponent {
     private authService: AuthService,
     private router: Router, // private msalService: MsalService
     private toastService: ToastService,
-    private localStorageService: LocalStorageService
+    private localStorageService: LocalStorageService,
+    private route: ActivatedRoute
   ) {
     this.loginRequest = InitializeLoginRequest;
+  }
+
+  ngOnInit(): void {
+    //Called after the constructor, initializing input properties, and the first call to ngOnChanges.
+    //Add 'implements OnInit' to the class.
+    this.authService.isAuthenticated$.subscribe((isAuthenticated) => {
+      if (isAuthenticated) {
+        const returnUrl =
+          this.route.snapshot.queryParamMap.get('returnUrl') || '/';
+        this.router.navigateByUrl(returnUrl); // ✅ redirect back to the intended route
+      }
+    });
   }
 
   login(): void {

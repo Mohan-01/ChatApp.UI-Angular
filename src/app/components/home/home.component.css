@@ -1,0 +1,85 @@
+/* Full-height container */
+.home-container {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Ensures row takes full height */
+.home-row {
+  flex-grow: 1;
+  display: flex;
+}
+
+/* Chat List Styling */
+.chat-list-container {
+  overflow-y: auto;
+  background: #fff;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+/* Chat Interface Styling */
+.chat-interface-container {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Responsive Layout */
+@media (max-width: 992px) {
+  .chat-list-container {
+    width: 100%;
+    border-right: none;
+  }
+
+  .chat-interface-container {
+    width: 100%;
+  }
+}
+/* Centered full-page layout */
+.home-hero {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background-color: #f8f9fa; /* Light gray background */
+  text-align: center;
+}
+
+/* Content box */
+.home-hero-content {
+  background: white;
+  padding: 40px;
+  border-radius: 10px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
+}
+
+/* Title */
+.home-hero-content h1 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+/* Subtitle */
+.home-hero-content p {
+  font-size: 16px;
+  color: #666;
+  margin-bottom: 20px;
+}
+
+/* Button container */
+.home-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
+/* Buttons */
+.btn {
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 6px;
+}
