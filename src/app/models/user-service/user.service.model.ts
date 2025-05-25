@@ -32,13 +32,13 @@ export enum UserRole {
 
 export const InitializeUserDto: UserDto = {
   username: '',
-  firstName: undefined,
-  middleName: undefined,
-  lastName: undefined,
-  email: undefined,
-  phone: undefined,
-  profilePicture: undefined,
-  status: undefined,
+  firstName: '',
+  middleName: '',
+  lastName: '',
+  email: '',
+  phone: '',
+  profilePicture: '',
+  status: '',
   lastSeen: new Date(Date.UTC(1900, 1, 1)),
 };
 

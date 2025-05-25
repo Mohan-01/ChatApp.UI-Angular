@@ -10,7 +10,7 @@
     </button>
 
     <!-- Chat Title with Profile Picture -->
-    <div class="chat-title">
+    <div class="chat-title" (click)="toggleProfile()">
       <img
         src="assets/default-avatar.png"
         alt="Profile Picture"
@@ -56,29 +56,30 @@
     </div>
 
     <!-- Dim Background -->
-    <div *ngIf="showProfile" class="dim-background" aria-hidden="true"></div>
+    <div
+      *ngIf="showProfile"
+      class="dim-background"
+      (click)="closeProfile($event)"
+      aria-hidden="true"
+    ></div>
   </div>
 
   <!-- Messages -->
   <div class="messages-container" #messagesContainer>
-    <ng-container *ngFor="let message of messages$ | async">
-      <div
-        *ngIf="message.chatId === selectedChat.chatId"
-        class="message"
-        [ngClass]="{
-          'message-sent': message.from === currentUsername,
-          'message-received': message.to === currentUsername
-        }"
-      >
-        <p class="message-text">{{ message.text }}</p>
-        <span class="message-time">{{
-          message.time | date : "shortTime"
-        }}</span>
-        <span *ngIf="message.from === this.currentUsername">
-          {{ message.messageStatus }}
-        </span>
-      </div>
-    </ng-container>
+    <div
+      *ngFor="let message of messages$ | async"
+      class="message"
+      [ngClass]="{
+        'message-sent': message.from === currentUsername,
+        'message-received': message.to === currentUsername
+      }"
+    >
+      <p class="message-text">{{ message.text }}</p>
+      <span class="message-time">{{ message.time | date : "shortTime" }}</span>
+      <span *ngIf="message.from === this.currentUsername">
+        {{ message.messageStatus }}
+      </span>
+    </div>
   </div>
 
   <!-- Message Input -->

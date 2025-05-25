@@ -1,31 +1,43 @@
-import { Component, ElementRef, HostListener, ViewChild } from '@angular/core';
 import {
-  BehaviorSubject,
-  distinctUntilChanged,
+  Component,
+  ElementRef,
+  HostListener,
+  ViewChild,
+  OnDestroy,
+  AfterViewInit,
+} from '@angular/core';
+import {
+  Subject,
+  takeUntil,
+  combineLatest,
+  map,
   filter,
+  distinctUntilChanged,
+  tap,
   Observable,
 } from 'rxjs';
+import { ActivatedRoute, Params, Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+
 import { ChatService } from '../../services/chat.service';
+import { SignlaRService } from '../../services/signlar.service';
 import { LocalStorageService } from '../../services/local-storage.service';
-import { ActivatedRoute, Router } from '@angular/router';
 import { ToastService } from '../../services/toast.service';
-import { UserService } from '../../services/user.service';
+
 import {
   InitializePrivateChatDto,
   PrivateChatDto,
 } from '../../models/chat-service/chat/chat.model';
 import {
   MessageDto,
+  MessageStatus,
   SendMessageDto,
 } from '../../models/chat-service/Message/message.model';
 import {
-  InitializeUserDto,
   UserDto,
+  InitializeUserDto,
 } from '../../models/user-service/user.service.model';
-import { SignlaRService } from '../../services/signlar.service';
-import { v4 } from 'uuid';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { ServiceResponse } from '../../models/response.model';
 
 @Component({
@@ -35,28 +47,22 @@ import { ServiceResponse } from '../../models/response.model';
   templateUrl: './chat.component.html',
   styleUrl: './chat.component.css',
 })
-export class ChatComponent {
-  private messagesSubject = new BehaviorSubject<MessageDto[]>([]);
-  public messages$: Observable<MessageDto[]> =
-    this.messagesSubject.asObservable();
-
-  private messageStatusSubject = new BehaviorSubject<Map<string, string>>(
-    new Map()
-  );
-  public messageStatusMap$ = this.messageStatusSubject.asObservable();
-
-  newMessageText: string = '';
+export class ChatComponent implements OnDestroy, AfterViewInit {
   @ViewChild('messagesContainer') messagesContainer!: ElementRef;
   @ViewChild('messageInput') messageInput!: ElementRef;
 
+  newMessageText = '';
   selectedChat: PrivateChatDto = InitializePrivateChatDto;
   toUserProfile: UserDto | null = InitializeUserDto;
-
-  toUser: string | null = null;
   currentUsername: string | null = null;
-  connectionState: string = 'disconnected';
+  toUser: string | null = null;
+  isChatFocused = false;
   showProfile = false;
-  isChatFocused: boolean = false; // Track whether the chat is focused or not
+
+  messages$: Observable<MessageDto[]>;
+  unreadMessages$: Observable<MessageDto[]>;
+
+  private destroy$ = new Subject<void>();
 
   constructor(
     private chatService: ChatService,
@@ -64,256 +70,205 @@ export class ChatComponent {
     private localStorageService: LocalStorageService,
     private router: Router,
     private toastService: ToastService,
-    private route: ActivatedRoute,
-    private userService: UserService
-  ) {}
+    private route: ActivatedRoute
+  ) {
+    this.messages$ = this.signalRService.messages$;
+    this.unreadMessages$ = combineLatest([
+      this.messages$,
+      this.route.params,
+    ]).pipe(
+      map(([messages, params]) =>
+        messages.filter(
+          (msg) =>
+            msg.to.toLowerCase() === this.currentUsername &&
+            msg.messageStatus === MessageStatus.Delivered &&
+            msg.from === params['username']
+        )
+      )
+    );
+  }
 
   ngOnInit(): void {
     this.initializeCurrentUser();
-    this.setupSignalRListeners();
     this.signalRService.startConnection();
-    this.route.params.subscribe((params) => {
-      this.toUser = params['username'];
-      this.getChat();
-      window.addEventListener('focus', this.handleFocus.bind(this)); // Listen for focus event
-      window.addEventListener('blur', this.handleBlur.bind(this)); // Listen for blur event
-    });
+    this.setupSignalRListeners();
+    this.listenToRouteChanges();
   }
 
-  //#region override methods and change listeners
-  @HostListener('document:visibilitychange', ['$event'])
-  private handleVisibilityChange(): void {
+  ngAfterViewInit(): void {
+    this.messageInput?.nativeElement.focus();
+    this.scrollToBottom();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  @HostListener('window:focus')
+  onFocus(): void {
+    this.isChatFocused = true;
+    this.markMessagesAsRead();
+  }
+
+  @HostListener('window:blur')
+  onBlur(): void {
+    this.isChatFocused = false;
+  }
+
+  @HostListener('document:visibilitychange')
+  onVisibilityChange(): void {
     if (document.visibilityState === 'visible') {
       this.markMessagesAsRead();
     }
   }
 
-  ngOnDestroy(): void {
-    document.removeEventListener(
-      'visibilitychange',
-      this.handleVisibilityChange
-    );
-    window.removeEventListener('focus', this.handleFocus.bind(this));
-    window.removeEventListener('blur', this.handleBlur.bind(this));
-  }
-
-  ngAfterViewInit(): void {
-    setTimeout(() => {
-      this.messageInput.nativeElement.focus();
-    }, 0);
-    this.scrollToBottom();
-  }
-  //#endregion override methods and change listeners
-
-  //#region Profile
-  toggleProfile() {
-    this.showProfile = !this.showProfile;
-  }
-
-  closeProfile(event: Event) {
-    event.stopPropagation();
-    this.showProfile = false;
-  }
-
-  // getProfileOfToUser() {
-  //   if (this.toUser) {
-  //     this.userService
-  //       .getUserByUsername(this.toUser)
-  //       .subscribe((user: UserResponse) => {
-  //         this.toUserProfile = user;
-  //       });
-  //   }
-  //   return '';
-  // }
-
-  @HostListener('document:click', ['$event'])
-  onClickOutside(event: Event) {
-    if (this.showProfile) {
-      const targetElement = event.target as HTMLElement;
-      if (
-        !targetElement.closest('.profile-hover-box') &&
-        !targetElement.closest('.chat-title')
-      ) {
-        this.showProfile = false;
-      }
-    }
-  }
-  //#endregion Profile
-
-  goBack() {
+  goBack(): void {
     this.router.navigate(['/chat']);
   }
 
   sendMessage(): void {
-    if (!this.newMessageText.trim()) return;
+    if (!this.newMessageText.trim() || !this.currentUsername || !this.toUser)
+      return;
 
-    const tempMessage = this.createMessage();
-    this.signalRService.sendMessage(tempMessage);
-    // this.addMessage({
-    //   messageId: new Date(Date.now()).toLocaleTimeString(),
-    //   clientId: v4(),
-    //   from: tempMessage.from,
-    //   to: tempMessage.to,
-    //   time: tempMessage.time,
-    //   text: tempMessage.text,
-    //   messageType: tempMessage.messageType,
-    //   repliedTo: '',
-    //   isEdited: false,
-    //   messageStatus: 'Sending',
-    // });
-    // this.addMessage(tempMessage);
+    const message: SendMessageDto = {
+      chatId: this.selectedChat.chatId,
+      from: this.currentUsername,
+      to: this.toUser,
+      time: new Date(),
+      text: this.newMessageText.trim(),
+      messageType: 'Text',
+      repliedTo: '',
+    };
+
+    const optimisticMessage: MessageDto = {
+      messageId: '', // Will be updated by server
+      chatId: message.chatId,
+      clientId: self.crypto.randomUUID(),
+      from: message.from,
+      to: message.to,
+      text: message.text,
+      time: new Date(Date.now()),
+      messageType: 'Text',
+      repliedTo: '',
+      isEdited: false,
+      messageStatus: MessageStatus.Sent,
+    };
+
+    this.signalRService.sendMessage(message, optimisticMessage);
+    this.scrollToBottom();
     this.newMessageText = '';
   }
 
-  private setupSignalRListeners(): void {
-    // Subscribe to connection state changes
-    this.signalRService.connectionState$.subscribe((state) => {
-      this.connectionState = state;
-    });
+  private listenToRouteChanges(): void {
+    this.route.params
+      .pipe(
+        map((params) => params['username']),
+        distinctUntilChanged(),
+        takeUntil(this.destroy$)
+      )
+      .subscribe((username) => {
+        this.toUser = username;
+        this.getChat();
+      });
+  }
 
-    // Listen for new messages
+  private setupSignalRListeners(): void {
     this.signalRService.messageReceived$
       .pipe(
-        filter((message): message is MessageDto => message !== null),
-        distinctUntilChanged()
+        filter((message): message is MessageDto => !!message),
+        distinctUntilChanged(),
+        tap(() => {
+          this.scrollToBottom();
+          this.markMessagesAsRead();
+        }),
+        takeUntil(this.destroy$)
       )
-      .subscribe((newMessage) => {
-        // console.log({ newMessage });
-        this.addMessage(newMessage);
-      });
-
-    // Listen for message status updates
-    // this.signalRService.messageStatus$.subscribe((statusMap) => {
-    //   // console.log('message status upddated');
-    //   const currentMessages = this.messagesSubject.value || [];
-    //   this.messagesSubject.next(
-    //     currentMessages.map((msg) => ({
-    //       ...msg,
-    //       messageStatus: statusMap.get(msg.messageId) || msg.messageStatus,
-    //     }))    //   );
-    // });
-    this.signalRService.messageStatus$.subscribe((statusMap) => {
-      console.log({ statusMap });
-      const updatedMessages = this.messagesSubject.value.map((msg) => {
-        if (statusMap.has(msg.messageId)) {
-          return {
-            ...msg,
-            messageStatus: statusMap.get(msg.messageId)!, // non-null assertion since we checked `has`
-          };
-        }
-        return msg;
-      });
-      console.log({ updatedMessages });
-      this.messagesSubject.next(updatedMessages);
-    });
+      .subscribe();
   }
 
   private getChat(): void {
     if (!this.currentUsername || !this.toUser) return;
 
-    this.chatService.getChatByUsernames(this.toUser).subscribe(
-      (response: ServiceResponse<PrivateChatDto>) => {
-        this.selectedChat = response.data || InitializePrivateChatDto;
-        console.log({ chat: this.selectedChat });
-        this.loadMessageDtos();
-        this.markMessagesAsRead();
-      },
-      (error) => {
-        this.toastService.showToast(
-          error.error?.message ||
-            'Failed to load chat. Please try again later.',
-          'danger'
-        );
-      }
-    );
+    this.chatService
+      .getChatByUsernames(this.toUser)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res: ServiceResponse<PrivateChatDto>) => {
+          this.selectedChat = res.data || InitializePrivateChatDto;
+          this.loadMessages();
+        },
+        error: (err) =>
+          this.toastService.showToast(
+            err.error?.message ||
+              'Failed to load chat. Please try again later.',
+            'danger'
+          ),
+      });
   }
 
-  private loadMessageDtos(): void {
+  /**
+   * Fetches messages for the selected chat and marks them as read
+   * This function is the main entry point for loading messages and store them in the signalRService message$
+   * After messages are loaded, and marked as read, it scrolls the messages container to the bottom
+   * @returns None
+   */
+  private loadMessages(): void {
     if (!this.selectedChat.chatId) return;
 
-    this.chatService.getMessages(this.selectedChat.chatId).subscribe(
-      (response: ServiceResponse<MessageDto[]>) => {
-        console.log({ response });
-        const messages = response.data;
+    this.chatService
+      .getMessages(this.selectedChat.chatId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res: ServiceResponse<MessageDto[]>) => {
+          this.signalRService.setMessages(res.data);
+          this.toUser =
+            this.selectedChat.username1 === this.currentUsername
+              ? this.selectedChat.username2
+              : this.selectedChat.username1;
 
-        this.messagesSubject.next(messages);
-        console.log({ messages });
+          this.scrollToBottom();
 
-        this.toUser =
-          this.currentUsername === this.selectedChat.username1
-            ? this.selectedChat.username2
-            : this.selectedChat.username1;
-        this.scrollToBottom();
-      },
-      (error) => {
-        this.toastService.showToast(
-          error.error?.message ||
-            'Failed to load messages. Please try again later.',
-          'danger'
-        );
-      }
-    );
+          setTimeout(() => this.markMessagesAsRead(), 500);
+        },
+        error: (err) =>
+          this.toastService.showToast(
+            err.error?.message || 'Failed to load messages.',
+            'danger'
+          ),
+      });
   }
 
+  /**
+   * If chat get focused then mark messages as read
+   * @returns None
+   */
   private markMessagesAsRead(): void {
+    console.log('Marking read:', {
+      isChatFocused: this.isChatFocused,
+      visibility: document.visibilityState,
+      toUser: this.toUser,
+      currentUsername: this.currentUsername,
+      selectedChatId: this.selectedChat.chatId,
+    });
+
     if (
+      document.visibilityState !== 'visible' ||
       !this.selectedChat.chatId ||
-      !this.currentUsername ||
-      !this.isChatFocused
+      !this.toUser
     )
       return;
 
-    const unreadMessages = this.messagesSubject.value.filter(
-      (msg) =>
-        msg.to.toLowerCase() === this.currentUsername &&
-        msg.messageStatus.toLowerCase() !== 'seen'
-    );
-
-    unreadMessages.forEach((msg) => {
-      if (msg.from === this.toUser) {
-        msg.messageStatus = 'Seen';
-        this.signalRService.markMessageAsRead(msg);
-      }
+    this.messages$.pipe(takeUntil(this.destroy$)).subscribe((messages) => {
+      messages
+        .filter(
+          (msg: MessageDto) =>
+            msg.to.toLowerCase() === this.currentUsername &&
+            msg.messageStatus === MessageStatus.Delivered &&
+            msg.from === this.toUser
+        )
+        .forEach((msg) => this.signalRService.markMessageAsRead(msg));
     });
-
-    this.messagesSubject.next([...this.messagesSubject.value]);
-  }
-
-  private addMessage(newMessage: MessageDto): void {
-    const currentMessages = this.messagesSubject.value;
-    const updatedMessages = currentMessages.map((msg) =>
-      msg.messageId === newMessage.messageId ? { ...msg, ...newMessage } : msg
-    );
-
-    if (
-      !currentMessages.some((msg) => msg.messageId === newMessage.messageId) &&
-      (newMessage.to === this.toUser || newMessage.from === this.toUser)
-    ) {
-      this.markMessagesAsRead();
-      updatedMessages.push(newMessage);
-
-      this.messagesSubject.next(updatedMessages);
-      this.scrollToBottom();
-    }
-  }
-
-  //#region Helper methods
-  private createMessage(): SendMessageDto {
-    if (!this.currentUsername) {
-      throw new Error('User should be logged in first');
-    }
-    if (!this.toUser) {
-      throw new Error('Recipient user ID is not provided');
-    }
-    return {
-      chatId: this.selectedChat.chatId,
-      from: this.currentUsername,
-      to: this.toUser,
-      time: new Date(Date.now()),
-      text: this.newMessageText.trim(),
-      messageType: 'Text',
-      repliedTo: '',
-    };
   }
 
   private initializeCurrentUser(): void {
@@ -328,24 +283,11 @@ export class ChatComponent {
   }
 
   private scrollToBottom(): void {
-    if (this.messagesContainer) {
-      setTimeout(() => {
-        this.messagesContainer.nativeElement.scrollTop =
-          this.messagesContainer.nativeElement.scrollHeight;
-      }, 100);
-    }
+    setTimeout(() => {
+      if (this.messagesContainer) {
+        const el = this.messagesContainer.nativeElement;
+        el.scrollTop = el.scrollHeight;
+      }
+    }, 100);
   }
-
-  // Handle window focus (chat comes into view)
-  private handleFocus(): void {
-    this.isChatFocused = true;
-    this.markMessagesAsRead(); // Mark messages as read when chat is focused
-  }
-
-  // Handle window blur (chat goes out of view)
-  private handleBlur(): void {
-    this.isChatFocused = false;
-  }
-
-  //#endregion
 }

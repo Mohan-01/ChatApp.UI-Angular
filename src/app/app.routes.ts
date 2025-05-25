@@ -8,15 +8,22 @@ import { ResetPasswordComponent } from './components/reset-password/reset-passwo
 import { ForgotUsernameComponent } from './components/forgot-username/forgot-username.component';
 import { authGuard } from './guards/auth.guard';
 import { ChatComponent } from './components/chat/chat.component';
+import { ChatListComponent } from './components/chat-list/chat-list.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
   { path: 'home', component: HomeComponent },
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
-  { path: 'profile', component: ProfileComponent, canActivate: [authGuard] },
   { path: 'forgot-username', component: ForgotUsernameComponent },
   { path: 'forgot-password', component: ForgotPasswordComponent },
   { path: 'reset-password', component: ResetPasswordComponent },
-  { path: 'chat/:username', component: ChatComponent },
+
+  { path: 'profile', component: ProfileComponent, canActivate: [authGuard] },
+  { path: 'chat', component: ChatListComponent, canActivate: [authGuard] },
+  {
+    path: 'chat/:username',
+    component: ChatComponent,
+    canActivate: [authGuard],
+  },
 ];

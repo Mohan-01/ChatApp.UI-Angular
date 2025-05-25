@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../environments/environment';
 import { PrivateChatDto } from '../models/chat-service/chat/chat.model';
@@ -27,7 +27,7 @@ export class ChatService {
     username: string
   ): Observable<ServiceResponse<PrivateChatDto[]>> {
     return this.http.get<ServiceResponse<PrivateChatDto[]>>(
-      `${this.apiUrl}/chat/user/${username}`,
+      `${this.apiUrl}/chat`,
       {
         withCredentials: true,
       }
